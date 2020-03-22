@@ -652,7 +652,7 @@
           id: "incidentsLayer",
           title:"Buildings",
          popupTemplate :{
-        content: [{
+         content: [{
             title: "Building information",
             type: "fields", // Autocasts as new FieldsContent()
             // Autocasts as new FieldInfo[]
@@ -891,24 +891,24 @@
         //       //valueUnit: "feet" // Converts and extrudes all data values in feet
         //     }]
         //  };
-        const geojsonLayer_2d = new GeoJSONLayer({
-          url: url,
-          copyright: "NYC Planning",
-          //popupEnabled: false,
-          id: "2dLayer",
-          title:"Analysis Layer",
-          outFields: ["BldgType", 
-          "CommercialArea","ResidentialMixedArea","OfficeMixedArea","FunctionArea", 
-          "height","NumFloors","bid",
-          "HealthGroup","OutdoorsGroup","OfficeGroup","CommercialGroup","EducationGroup","CultureGroup",
-          "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"],
-          renderer: renderer_2d //optional
-        });
+        // const geojsonLayer_2d = new GeoJSONLayer({
+        //   url: url,
+        //   copyright: "NYC Planning",
+        //   //popupEnabled: false,
+        //   id: "2dLayer",
+        //   title:"Analysis Layer",
+        //   outFields: ["BldgType", 
+        //   "CommercialArea","ResidentialMixedArea","OfficeMixedArea","FunctionArea", 
+        //   "height","NumFloors","bid",
+        //   "HealthGroup","OutdoorsGroup","OfficeGroup","CommercialGroup","EducationGroup","CultureGroup",
+        //   "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"],
+        //   renderer: renderer_2d //optional
+        // });
         /********DRAW NEW BUILDINGS -1 *************/
         let gLayer = new GraphicsLayer({
             id:"gLayer",
-            title:"Sketch Layer",
-            listMode:"hide"
+            title:"Sketch Layer"
+           // listMode:"hide"
         });
         let blue = [82, 82, 122, 0.9];
         let white = [255, 255, 255, 0.8];
@@ -1500,7 +1500,9 @@
          * query by geometry
          * ************************/
         // add a GraphicsLayer for the sketches and the buffer
-        const sketchLayer = new GraphicsLayer();
+        const sketchLayer = new GraphicsLayer(
+            
+        );
         const bufferLayer = new GraphicsLayer();
         view.map.addMany([bufferLayer, sketchLayer]);
         let sceneLayer = null;
@@ -1534,7 +1536,7 @@
                 // if (layer.type === "geojson") {
                 //   geojsonLayerView = layerView;
                 // }
-                if (layer.id === "geojsonLayer" || layer.id === "2dLayer"|| layer.id === "gLayer") {
+                if (layer.id === "incidentsLayer" || layer.id === "gLayer") {
                   sceneLayerView = layerView;
                   // queryDiv.style.display = "block";
                 }
@@ -1904,16 +1906,16 @@
           geojsonLayer.queryFeatures().then(function(featureset){
             var feature_json = featureset.toJSON()
             geojson_f = JSON.stringify(ArcgisToGeojsonUtils.arcgisToGeoJSON(feature_json))
-            on(dom.byId("savejson"), "click", function(){
-                request.post("http://localhost:8000", {
-                    data: geojson_f,
-                    headers: {
-                        "X-Something": "A value"
-                    }
-                }).then(function(text){
-                    console.log("The server returned: ", text);
-                });
-            });
+            // on(dom.byId("savejson"), "click", function(){
+            //     request.post("http://localhost:8000", {
+            //         data: geojson_f,
+            //         headers: {
+            //             "X-Something": "A value"
+            //         }
+            //     }).then(function(text){
+            //         console.log("The server returned: ", text);
+            //     });
+            // });
 
 //            console.log(geojson_f);
             console.log(geojson_f)
@@ -2121,13 +2123,13 @@
           view: view
         });
 
-        on(dom.byId("loadjson"), "click", function(){
-        domConst.place("<p>Requesting...</p>", "output");
-        request.get("request/helloworld.json").then(function(text){
-       domConst.place("<p>response: <code>" + text + "</code>", "output");
-        console.log(text);
-    });
-  });
+//         on(dom.byId("loadjson"), "click", function(){
+//         domConst.place("<p>Requesting...</p>", "output");
+//         request.get("request/helloworld.json").then(function(text){
+//        domConst.place("<p>response: <code>" + text + "</code>", "output");
+//         console.log(text);
+//     });
+//   });
        // view.ui.add("load", "top-right");
         
     /*************Add other graphs using HIGHCHARTS***************************/
@@ -2304,8 +2306,7 @@ request.get("data/group_json_positive.json", {
 
                 // var benefit = data.benefit;
                 // var errordata = data.benefit_variance
-                console.log(g1)
-           
+                
 // var preference_com = [34.4
 // ,10.2
 // ,14.9
@@ -2972,7 +2973,7 @@ Highcharts.chart('benefit_container', {
             />
           </div>
       </div>
-    <div id="save" class="esri-widget">
+    <!-- <div id="save" class="esri-widget">
         <button id="savejson" class="esri-button">
           Save Design
         </button>
@@ -2982,7 +2983,7 @@ Highcharts.chart('benefit_container', {
         <button id="loadjson" class="esri-button">
           Load Design
         </button>
-      </div>
+      </div> -->
     <div id="editArea" class="editArea-container esri-widget--panel">
         <div id="addFeatureDiv" style="display:block;">
           <h3 class="list-heading">Update Building Information</h3>
@@ -3079,14 +3080,6 @@ Highcharts.chart('benefit_container', {
         <button id="query-quakes" class="esri-widget">Query</button>
         <button id="query-quakes-clear" class="esri-widget">Clear</button>
         <div id="results" class="esri-widget"></div>
-    </div>
-
-    <div id="summary" class="esri-widget">
-        <h3>Summary of the Bronx Neighbourhood</h3>
-        <p>Total Population:16,000</p>
-        <p>Total Floor Area: 11.61km2 </p>
-        <p>Site Area: 2.7km2</p>
-        <p>Gross Plot Ratio: 4.3</p>
     </div>
     <!-- <div id="controls" class="esri-widget">
         <div id="description" class="esri-widget">Population density by Group</div>
