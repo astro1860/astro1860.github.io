@@ -206,7 +206,7 @@
         top: 0;
         right: 0;
         height: 100%;
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255, 255, 255, 1);
         width: 500px;
       }
 
@@ -303,7 +303,8 @@
         "esri/popup/ExpressionInfo",
         "esri/widgets/HistogramRangeSlider",
         "esri/renderers/smartMapping/statistics/histogram",
-        "esri/renderers/ClassBreaksRenderer"   
+        "esri/renderers/ClassBreaksRenderer",
+        "esri/core/watchUtils",
       ], function(
         Map,
         GeoJSONLayer,PolygonSymbol3D,ExtrudeSymbol3DLayer, SimpleRenderer,Legend,
@@ -334,11 +335,14 @@
         ExpressionInfo,
         HistogramRangeSlider,
         histogram,
-        ClassBreaksRenderer
+        ClassBreaksRenderer,
+        watchUtils
       ) {
         //const url ="http://localhost:5500/bronx_pluto.json";
         //const url ="http://localhost:5500/new_geo.geojson";
         const url = "data/new_geo_benefit_all.geojson"
+        const url_block = "data/censusblock_benefit.geojson"
+
         let editFeature, highlight;
  
         var resSym = {
@@ -349,11 +353,11 @@
               material: {
                 color: "#FDB809"
               },
-            //   edges: {
-            //     type: "sketch",
-            //     color: "#72420d",
-            //     size: 1.5
-            //   }
+              edges: {
+                type: "solid",
+                color: "#72420d",
+                size: 0.5
+              }
             }
           ]
         };
@@ -364,12 +368,12 @@
               type: "extrude", // autocasts as new ExtrudeSymbol3DLayer()
               material: {
                 color: "#F3BEB1"
-              }
-            //   edges: {
-            //     type: "solid",
-            //     color: "#72420d",
-            //     size: 1.5
-            //  }
+              },
+              edges: {
+                type: "solid",
+                color: "#72420d",
+                size: 0.5
+             }
             }
           ]
         };
@@ -381,11 +385,11 @@
               material: {
                 color: "#E01B27"
               },
-            //   edges: {
-            //     type: "solid",
-            //     color: "#72420d",
-            //     size: 1.5
-            //   }
+              edges: {
+                type: "solid",
+                color: "#72420d",
+                size: 0.5
+              }
             }
           ]
         };
@@ -397,11 +401,11 @@
               material: {
                 color: "#FC8553"
               },
-            //   edges: {
-            //     type: "solid",
-            //     color: "#4c294b",
-            //     size: 1.5
-            //   }
+              edges: {
+                type: "solid",
+                color: "#4c294b",
+                size: 0.5
+              }
             }
           ]
         };
@@ -413,12 +417,12 @@
               type: "extrude", // autocasts as new ExtrudeSymbol3DLayer()
               material: {
                 color: "#983EBC"
+              },
+              edges: {
+                type: "solid",
+                color: "#4c294b",
+                size: 0.5
               }
-            //   edges: {
-            //     type: "solid",
-            //     color: "#4c294b",
-            //     size: 1.5
-            //   }
             }
           ]
         };
@@ -430,12 +434,12 @@
               type: "extrude", // autocasts as new ExtrudeSymbol3DLayer()
               material: {
                 color: "#BCD08D"
+              },
+              edges: {
+                type: "solid",
+                color: "#4c294b",
+                size: 0.5
               }
-            //   edges: {
-            //     type: "solid",
-            //     color: "#4c294b",
-            //     size: 1.5
-            //   }
             }
           ]
         };
@@ -447,12 +451,12 @@
               type: "extrude", // autocasts as new ExtrudeSymbol3DLayer()
               material: {
                 color: "#8bbdd9"
+              },
+              edges: {
+                type: "solid",
+                color: "#4c294b",
+                size: 0.5
               }
-            //   edges: {
-            //     type: "solid",
-            //     color: "#4c294b",
-            //     size: 1.5
-            //   }
             }
           ]
         };
@@ -464,12 +468,12 @@
               type: "extrude", // autocasts as new ExtrudeSymbol3DLayer()
               material: {
                 color: "#026aa7"
+              },
+              edges: {
+                type: "solid",
+                color: "#4c294b",
+                size: 0.5
               }
-            //   edges: {
-            //     type: "solid",
-            //     color: "#4c294b",
-            //     size: 1.5
-            //   }
             }
           ]
         };
@@ -482,11 +486,11 @@
               material: {
                 color: "#0b54ff"
               },
-            //   edges: {
-            //     type: "solid",
-            //     color: "#4c294b",
-            //     size: 1.5
-            //   }
+              edges: {
+                type: "solid",
+                color: "#4c294b",
+                size: 0.5
+              }
             }
           ]
         };
@@ -646,73 +650,8 @@
           copyright: "NYC Planning",
           popupEnabled: false,
           id: "incidentsLayer",
-        //   popupTemplate: {
-        //     // autocasts as new PopupTemplate()
-        //     title: "Building information",
-        //     content: [{
-        //         type: "fields",
-        //         fieldInfos: [
-        //           {
-        //             fieldName: "BldgType",
-        //             label: "Building Usage"
-        //           },
-        //           {
-        //             fieldName: "NumFloors",
-        //             label: "Number of Floors"
-        //           },
-        //           {
-        //             fieldName: "bid",
-        //             label: "Building ID"
-        //           },
-        //           {
-        //             fieldName: "height",
-        //             label: "height"
-        //           },
-        //           {
-        //             fieldName: "FunctionArea",
-        //             label: "Total Floor Area"
-        //           },
-        //           {
-        //             fieldName: "ResidentialMixedArea",
-        //             label: "Residential Floor Area"
-        //           },
-        //           {
-        //             fieldName: "CommercialMixedArea",
-        //             label: "Commercial Floor Area"
-        //           },
-        //           {
-        //             fieldName: "OfficeMixedArea",
-        //             label: "Office Floor Area"
-        //           },
-        //           {
-        //             fieldName: "CommercialGroup",
-        //             label: "Commercial Group"
-        //           },
-        //           {
-        //             fieldName: "CultureGroup",
-        //             label: "Culture Group"
-        //           },
-        //           {
-        //             fieldName: "EducationGroup",
-        //             label: "Education Group"
-        //           },
-        //           {
-        //             fieldName: "HealthGroup",
-        //             label: "Health Group"
-        //           },
-        //           {
-        //             fieldName: "OutdoorsGroup",
-        //             label: "Outdoors Group"
-        //           },
-        //           {
-        //             fieldName: "OfficeGroup",
-        //             label: "Office Group"
-        //           }
-
-        //         ]
-        //       }],
-        //   }, 
-        popupTemplate :{
+          title:"Buildings",
+         popupTemplate :{
         content: [{
             title: "Building information",
             type: "fields", // Autocasts as new FieldsContent()
@@ -808,7 +747,7 @@
             expression: "$feature.BldgType"
         }, {
             name: "FunctionArea",
-            title: "Total Floor Area(ft2)",
+            title: "Total Floor Area (ft2)",
             expression: "Round($feature.FunctionArea,2)"
         },
         {
@@ -869,9 +808,107 @@
           "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"],
           renderer: renderer //optional
         });
+        /*************DRAW 2D layers*************************/
+        //const colors_block = [ "#f0f0f0", "#bdbdbd", "#636363" ];
+        const color = [ "#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6" ];
+        // Define the variable
+        var colorVisVar = {
+          // The type must be set to color for the renderer to know it will use color
+          type: "color",
+          // Assign the field name to visualize with color (number of smart phone owners)
+          field: "HealthGroup_benefit",
+          // If normalizing set the field to normalize by (in this case total population)
+          //normalizationField: "TOTPOP_CY",
+          // Set the color ramp based on two values (min/max) and two colors
+          stops: [{ value: 0.1, color: color[0] }, { value: 0.3, color: color[1] },
+                  { value: 0.5, color: color[2] }, { value: 0.8, color: color[3] },
+                  { value: 1.0, color: color[4] }]
+        };
+        var sizeVisVar = {
+          // The type must be set to size for the renderer to know size will be altered
+          type: "size",
+          // Assign the field name to visualize with size (total population)
+          field: "HealthGroup",
+          // Set the field to normalize the values by (in this case square miles)
+          //normalizationField: "SQMI",
+          //valueUnit: "unknown",
+          // Create a size ramp based on the min/max values
+          stops: [{ value: 2, size: 10}, { value: 10, size: 40 }]
+        };
+        var opaVisVar =   {
+          type: "opacity",
+          field: "HealthGroup_benefit",
+          stops: [
+              { value: 0.1, opacity: 0.9 },
+              { value: 1, opacity: 0.1 }]    
+            }
+        var renderer_2d = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          // Define a default marker symbol.
+          symbol: { 
+            type: "simple-marker",
+                outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [128, 128, 128],
+            width: 0.5}
+           }, // autocasts as new SimpleMarkerSymbol()
+          // Set the color and size visual variables on the renderer
+          visualVariables: [colorVisVar, sizeVisVar, opaVisVar]
+        };
+        // var renderer_2d = {
+        //   type: "unique-value", // autocasts as new UniqueValueRenderer()
+        //   defaultSymbol: {type: "simple-fill" },
+        //   field: "HealthGroup_benefit",
+        //   uniqueValueInfos:[{
+        //         // All features with value of "North" will be blue
+        //         value: "low",
+        //         symbol: {
+        //         type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        //         color: colors_block[2]
+        //         }
+        //     }, {
+        //         // All features with value of "East" will be green
+        //         value: "medium",
+        //         symbol: {
+        //         type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        //         color: colors_block[1]
+        //         }
+        //     }, {
+        //         // All features with value of "South" will be red
+        //         value: "high",
+        //         symbol: {
+        //         type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+        //         color: colors_block[0]
+        //         }
+        //     }],
+        //   visualVariables: [
+        //     {
+        //       type: "opacity",
+        //       field: "HealthGroup_benefit",
+        //       stops: [
+        //           { value: 0, opacity: 0.9 },
+        //           { value: 1, opacity: 0.1 }]
+        //       //valueUnit: "feet" // Converts and extrudes all data values in feet
+        //     }]
+        //  };
+        const geojsonLayer_2d = new GeoJSONLayer({
+          url: url,
+          copyright: "NYC Planning",
+          //popupEnabled: false,
+          id: "2dLayer",
+          title:"Analysis Layer",
+          outFields: ["BldgType", 
+          "CommercialArea","ResidentialMixedArea","OfficeMixedArea","FunctionArea", 
+          "height","NumFloors","bid",
+          "HealthGroup","OutdoorsGroup","OfficeGroup","CommercialGroup","EducationGroup","CultureGroup",
+          "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"],
+          renderer: renderer_2d //optional
+        });
         /********DRAW NEW BUILDINGS -1 *************/
         let gLayer = new GraphicsLayer({
-            id:"gLayer"
+            id:"gLayer",
+            title:"Sketch Layer",
+            listMode:"hide"
         });
         let blue = [82, 82, 122, 0.9];
         let white = [255, 255, 255, 0.8];
@@ -927,29 +964,19 @@
                 tilt: 30,
                 heading: 23
             }
-        // highlightOptions: {
-        //     color: "#00ffff",
-        //     //haloColor: "yellow",
-        //     haloOpacity: 0.2,
-        //     fillOpacity: 0.4
-        //     }
+
         });
         window.view = view;
-        // const infoDivExpand = new Expand({
-        //   //expandIconClass: "esri-icon-edit",
-        //   expandTooltip: "Query by Group Density",
-        //   expanded: false,
-        //   view: view,
-        //   content: document.getElementById("infoDiv")
-        // });
+
         const infoDiv_expand = new Expand({
-            expandIconClass: "esri-icon-group",
-            expandTooltip: "Group Population",
+            expandIconClass: "esri-icon-filter",
+            expandTooltip: "Filter",
             expanded: false,
             view: view,
-            content: document.getElementById("infoDiv")
+            content: document.getElementById("infoDiv"),
+            group: "top-left"
         });
-        view.ui.add(infoDiv_expand, "top-left");
+        //view.ui.add(infoDiv_expand, "top-left");
       
         var legend = new Expand({
           content: new Legend({
@@ -962,15 +989,20 @@
         });
         view.ui.add(legend, "bottom-right");
       
-        // var legend = new Legend({
-        //   view: view,
-        //   style: "card"
-        // });
-        // view.ui.add(legend, "bottom-left");
-        //view.ui.add("elevationDiv", "top-right");
+
     /********DRAW NEW BUILDINGS -2 *************/
     view.ui.add("fairness_box", "top-right");
-    view.ui.add("sketchPanel", "top-right");
+    
+    
+    const sketch_editExpand = new Expand({ 
+        expandIconClass: "esri-icon-edit",
+        expandTooltip: "Draw a Building",
+        expanded: false,
+        view: view,
+        content: document.getElementById("sketchPanel"),
+        group: "top-left"
+    });
+    view.ui.add(sketch_editExpand, "top-left");
        
     
     
@@ -1061,15 +1093,11 @@
                     },
                     {
                         name: "BldgType",
-                        label: "Choose building usage"
-                    },
-                    {
-                        name: "height",
-                        label: "Choose height"
+                        label: "Building Type"
                     },
                     {
                         name: "NumFloors",
-                        label: "Choose number of floors"
+                        label: "Number of floors"
                     },
                     {
                         name: "FunctionArea",
@@ -1244,7 +1272,7 @@
 
         // Call FeatureLayer.applyEdits() with specified params.
         function applyEditsToIncidents(params) {
-          // unselectFeature();
+          //unselectFeature();
           geojsonLayer
             .applyEdits(params)
             .then(function(editsResult) {
@@ -1413,15 +1441,16 @@
         }
 
         // Expand widget for the editArea div.
-        const editExpand = new Expand({
-          expandIconClass: "esri-icon-edit",
-          expandTooltip: "Expand Edit",
-          expanded: false,
+        const editExpand = new Expand({ 
+          expandIconClass: "esri-icon-organization",
+          expandTooltip: "Edit Buildings",
+          expanded: true,
           view: view,
-          content: document.getElementById("editArea")
+          content: document.getElementById("editArea"),
+          group: "top-left"
         });
 
-        view.ui.add(editExpand, "top-right");
+      //  view.ui.add(editExpand, "top-left");
         // input boxes for the attribute editing
         const addFeatureDiv = document.getElementById("addFeatureDiv");
         const attributeEditing = document.getElementById("featureUpdateDiv");
@@ -1505,7 +1534,7 @@
                 // if (layer.type === "geojson") {
                 //   geojsonLayerView = layerView;
                 // }
-                if (layer.type === "geojson" || layer.id === "gLayer") {
+                if (layer.id === "geojsonLayer" || layer.id === "2dLayer"|| layer.id === "gLayer") {
                   sceneLayerView = layerView;
                   // queryDiv.style.display = "block";
                 }
@@ -1521,16 +1550,16 @@
         });
 
         const queryDiv_expand = new Expand({
-            expandIconClass: "esri-icon-filter",
-            expandTooltip: "Accessibility",
+            expandIconClass: "esri-icon-share",
+            expandTooltip: "Measure Accessibility",
             expanded: false,
             view: view,
-            content: document.getElementById("queryDiv")
+            content: document.getElementById("queryDiv"),
+            group: "top-left"
     });
 
 
-        view.ui.add(queryDiv_expand, "top-left");
-        //view.ui.add([queryDiv], "top-left");
+        //view.ui.add(queryDiv_expand, "top-left");
         view.ui.add([resultDiv], "bottom-right");
 
         // use SketchViewModel to draw polygons that are used as a query
@@ -1890,20 +1919,7 @@
             console.log(geojson_f)
         });
         }
-       // view.ui.add("save", "top-right"); 
-        // geojsonLayer.queryFeatures().then(function(featureset){
-        //     var feature_json = featureset.toJSON()
-        //     console.log(feature_json);
-        // })
-       
 
-       // // query all features from the oil and gas wells layer
-        // view.when(function() {
-        // return wellsLayer.when(function() {
-        //     var query = geojsonLayer.createQuery();
-        //     return wellsLayer.queryFeatures(query);
-        // });
-        // });
 
         /**********************************CREATE CHARTS***********************************/
         var yearChart = null;
@@ -2798,7 +2814,7 @@ var chart= new Highcharts.chart({
 // add benefit bar chart
 // var errordata =  [[48, 51], [68, 73], [92, 110], [128, 136], [140, 150], [171, 179]]
 // var benefit = [50,70,106,129,144,176,135]
-var benefit_average = 0.1
+//var benefit_average = 0.1
 Highcharts.chart('benefit_container', {
     chart: {
         zoomType: 'xy',
@@ -2877,18 +2893,19 @@ Highcharts.chart('benefit_container', {
                     console.log(error);
                 });
 
-        //view.ui.add([resultDiv_highchart], "bottom-right");
-  //view.ui.add(legend, "bottom-left");
   /*********************View Summary BOX*****************/
   const summaryExpand = new Expand({
     expandIconClass: "esri-icon-description",
     expandTooltip: "Summary of the Neighbourhood",
     expanded: false,
     view: view,
-    content: document.getElementById("summary")
+    content: document.getElementById("summary"),
+    group: "top-left"
   });
 
-  view.ui.add(summaryExpand, "top-left");
+  //view.ui.add(summaryExpand, "top-left");
+  view.ui.add([sketch_editExpand,editExpand,queryDiv_expand,infoDiv_expand], "top-left");
+
       });
     </script>
   </head>
@@ -2938,11 +2955,24 @@ Highcharts.chart('benefit_container', {
         <div class="fairness_score" id="fairness_score"><h2>0.3</h2></div>
       </div>
     <div id="sketchPanel" class="esri-widget">
-        <button id="drawbuilding" data-type="polygon" class="esri-button">
-          Draw a building
-        </button>
+        <div id="drawbuilding"> 
+            <input
+              type="button"
+              class="esri-button"
+              value="Draw a building"
+              id="drawbuilding"
+            />
+          </div>
+        <div id="deleteArea"> 
+            <input
+              type="button"
+              class="esri-button"
+              value="Delete a building"
+              id="btnDelete"
+            />
+          </div>
       </div>
-      <div id="save" class="esri-widget">
+    <div id="save" class="esri-widget">
         <button id="savejson" class="esri-button">
           Save Design
         </button>
@@ -2955,12 +2985,12 @@ Highcharts.chart('benefit_container', {
       </div>
     <div id="editArea" class="editArea-container esri-widget--panel">
         <div id="addFeatureDiv" style="display:block;">
-          <h3 class="list-heading">Update Features</h3>
+          <h3 class="list-heading">Update Building Information</h3>
           <ul style="font-size: 12px; padding-left: 1.5em;">
             <!-- <li>Select template from the list</li>
             <li>Click on the map to create a new feature</li> -->
-            <li>Update associated attribute data</li>
-            <li>Click <i>Update building Info</i></li>
+            <li>Update the building information including functions, number of floors, etc. </li>
+            <li>Click Update Building.</li>
           </ul>
           <!-- <div id="addTemplatesDiv" style="background:#fff;"></div> -->
         </div>
@@ -2972,19 +3002,19 @@ Highcharts.chart('benefit_container', {
             <input
               type="button"
               class="esri-button"
-              value="Update building info"
+              value="Update Building"
               id="btnUpdate"
             />
           </div>
           <br />
-          <div id="deleteArea"> 
+          <!-- <div id="deleteArea"> 
             <input
               type="button"
               class="esri-button"
               value="Delete building"
               id="btnDelete"
             />
-          </div>
+          </div> -->
         </div>
   
 
