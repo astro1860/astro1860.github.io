@@ -150,13 +150,13 @@
         padding-top: 20px;
       }
     #groupbar_container {
-        height: 40%; 
+        height: 30%; 
     }
     #groupsize_container {
         height: 30%; 
     }
     #benefit_container {
-        height: 30%; 
+        height: 40%; 
     }
     .highcharts-figure, .highcharts-data-table table {
         min-width: 310px; 
@@ -305,6 +305,7 @@
         "esri/renderers/smartMapping/statistics/histogram",
         "esri/renderers/ClassBreaksRenderer",
         "esri/core/watchUtils",
+        "esri/symbols/IconSymbol3DLayer"
       ], function(
         Map,
         GeoJSONLayer,PolygonSymbol3D,ExtrudeSymbol3DLayer, SimpleRenderer,Legend,
@@ -336,12 +337,14 @@
         HistogramRangeSlider,
         histogram,
         ClassBreaksRenderer,
-        watchUtils
+        watchUtils,
+        IconSymbol3DLayer
       ) {
         //const url ="http://localhost:5500/bronx_pluto.json";
         //const url ="http://localhost:5500/new_geo.geojson";
         const url = "data/new_geo_benefit_all.geojson"
         const url_block = "data/censusblock_benefit.geojson"
+        
 
         let editFeature, highlight;
  
@@ -652,7 +655,7 @@
           id: "incidentsLayer",
           title:"Buildings",
          popupTemplate :{
-         content: [{
+        content: [{
             title: "Building information",
             type: "fields", // Autocasts as new FieldsContent()
             // Autocasts as new FieldInfo[]
@@ -810,37 +813,41 @@
         });
         /*************DRAW 2D layers*************************/
         //const colors_block = [ "#f0f0f0", "#bdbdbd", "#636363" ];
-        const color = [ "#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6" ];
+        //const color = [ "#d7191c", "#fdae61", "#ffffbf", "#abd9e9", "#2c7bb6","#00FFFFFF"];
+        const color = [ "#f7f7f7", "#d9d9d9", "#bdbdbd", "#969696", "#636363", "#252525" ];
         // Define the variable
         var colorVisVar = {
           // The type must be set to color for the renderer to know it will use color
           type: "color",
           // Assign the field name to visualize with color (number of smart phone owners)
-          field: "HealthGroup_benefit",
+          field: "CultureGroup_benefit",
           // If normalizing set the field to normalize by (in this case total population)
           //normalizationField: "TOTPOP_CY",
           // Set the color ramp based on two values (min/max) and two colors
-          stops: [{ value: 0.1, color: color[0] }, { value: 0.3, color: color[1] },
-                  { value: 0.5, color: color[2] }, { value: 0.8, color: color[3] },
-                  { value: 1.0, color: color[4] }]
+          stops: [{ value: 0.01, color: color[4] }, { value: 0.012, color: color[3] },
+                  { value: 0.014, color: color[2] }, { value: 0.016, color: color[1] },
+                  { value: 0.018, color: color[0] }],
+          valueExpressionTitle: "Resident Benefit"
         };
         var sizeVisVar = {
           // The type must be set to size for the renderer to know size will be altered
           type: "size",
           // Assign the field name to visualize with size (total population)
-          field: "HealthGroup",
+          field: "CultureGroup",
           // Set the field to normalize the values by (in this case square miles)
           //normalizationField: "SQMI",
           //valueUnit: "unknown",
           // Create a size ramp based on the min/max values
-          stops: [{ value: 2, size: 10}, { value: 10, size: 40 }]
+          stops: [{ value: 0, size: 10}, { value: 40, size: 50 }],
+          valueExpressionTitle: "Resident Population"
         };
         var opaVisVar =   {
           type: "opacity",
-          field: "HealthGroup_benefit",
+          field: "CultureGroup_benefit",
           stops: [
-              { value: 0.1, opacity: 0.9 },
-              { value: 1, opacity: 0.1 }]    
+              { value: 0, opacity: 0 },
+              { value: 0.0001, opacity: 1 }],
+
             }
         var renderer_2d = {
           type: "simple", // autocasts as new SimpleRenderer()
@@ -850,10 +857,19 @@
                 outline: {
             // autocasts as new SimpleLineSymbol()
             color: [128, 128, 128],
-            width: 0.5}
+            width: 0}
            }, // autocasts as new SimpleMarkerSymbol()
           // Set the color and size visual variables on the renderer
-          visualVariables: [colorVisVar, sizeVisVar, opaVisVar]
+          visualVariables: [colorVisVar, sizeVisVar]
+        };
+        var symbol_2d = {
+          type: "point-3d",  // autocasts as new PointSymbol3D()
+          symbolLayers: [{
+            type: "icon",  // autocasts as new IconSymbol3DLayer()
+            size: 8,  // points
+            resource: { primitive: "circle" },
+            material: { color: "red" }
+          }]
         };
         // var renderer_2d = {
         //   type: "unique-value", // autocasts as new UniqueValueRenderer()
@@ -891,24 +907,173 @@
         //       //valueUnit: "feet" // Converts and extrudes all data values in feet
         //     }]
         //  };
-        // const geojsonLayer_2d = new GeoJSONLayer({
-        //   url: url,
-        //   copyright: "NYC Planning",
-        //   //popupEnabled: false,
-        //   id: "2dLayer",
-        //   title:"Analysis Layer",
-        //   outFields: ["BldgType", 
-        //   "CommercialArea","ResidentialMixedArea","OfficeMixedArea","FunctionArea", 
-        //   "height","NumFloors","bid",
-        //   "HealthGroup","OutdoorsGroup","OfficeGroup","CommercialGroup","EducationGroup","CultureGroup",
-        //   "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"],
-        //   renderer: renderer_2d //optional
+        // var popupTemplate_2d = new PopupTemplate({
+        //   // autocasts as new PopupTemplate()
+        //   title: "Benefit Values",
+        //   content: [{
+        //     // It is also possible to set the fieldInfos outside of the content
+        //     // directly in the popupTemplate. If no fieldInfos is specifically set
+        //     // in the content, it defaults to whatever may be set within the popupTemplate.
+        //     type: "fields",
+        //     fieldInfos: [{
+        //       fieldName: "CultureGroup_benefit",
+        //       label: "Culture Group benefit"
+        //     }]
+        //   }]
         // });
+        var currentElevationInfo = {
+            mode: "absolute-height",
+            offset: 10,
+            featureExpressionInfo: 50,
+            unit: "miles"
+          };
+        console.log(currentElevationInfo)
+        const geojsonLayer_2d = new GeoJSONLayer({
+          url: url,
+          copyright: "NYC Planning",
+          popupEnabled: true,
+          popupTemplate: {
+          // autocasts as new PopupTemplate()
+          title: "Benefit Values",
+          elevationInfo: [{
+            mode: "absolute-height",
+            offset: 10,
+            featureExpressionInfo: 50,
+            unit: "miles"
+          }],
+          content: [{
+            // It is also possible to set the fieldInfos outside of the content
+            // directly in the popupTemplate. If no fieldInfos is specifically set
+            // in the content, it defaults to whatever may be set within the popupTemplate.
+            type: "fields",
+            fieldInfos: [{
+              fieldName: "CultureGroup_benefit",
+              label: "Culture Group benefit"
+            }]
+          }]
+        },
+          id: "geojson_2d",
+          title:"Analysis Layer",
+          outFields: ["BldgType", 
+          "CommercialArea","ResidentialMixedArea","OfficeMixedArea","FunctionArea", 
+          "height","NumFloors","bid",
+          "HealthGroup","OutdoorsGroup","OfficeGroup","CommercialGroup","EducationGroup","CultureGroup",
+          "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"],
+          renderer: renderer_2d //optional
+        });
+        /**************geojson block layer**********************/
+        const colors_block = [ "#f0f0f0", "#bdbdbd", "#636363" ];
+        var renderer_block = {
+          type: "unique-value", // autocasts as new UniqueValueRenderer()
+          defaultSymbol: {type: "simple-fill" },
+          field: "benefit_range",
+          uniqueValueInfos:[{
+                // All features with value of "North" will be blue
+                value: "low",
+                symbol: {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: colors_block[2]
+                }
+            }, {
+                // All features with value of "East" will be green
+                value: "medium",
+                symbol: {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: colors_block[1]
+                }
+            }, {
+                // All features with value of "South" will be red
+                value: "high",
+                symbol: {
+                type: "simple-fill",  // autocasts as new SimpleFillSymbol()
+                color: colors_block[0]
+                }
+            }],
+          visualVariables: [
+            {
+              type: "opacity",
+              field: "benefit_value",
+              stops: [
+                  { value: 0, opacity: 0.9 },
+                  { value: 1, opacity: 0.1 }]
+              //valueUnit: "feet" // Converts and extrudes all data values in feet
+            }]
+        };
+      
+        const geojsonLayer_block = new GeoJSONLayer({
+          url: url_block,
+          copyright: "NYC Planning",
+          popupEnabled: false,
+          id: "CensusBlockLayer",
+          popupEnabled: false,
+          popupTemplate :{
+                content: [{
+                    title: "Census Block Information",
+                    type: "fields", // Autocasts as new FieldsContent()
+                    // Autocasts as new FieldInfo[]
+                    fieldInfos: [{
+                    fieldName: "expression/block_id",
+                    format: {
+                            digitSeparator: true,
+                            places: 0
+                            }
+                    }, {
+                    fieldName: "expression/benefit_value",
+                    format: {
+                            digitSeparator: true,
+                            places: 0
+                            }
+                    },
+                    {
+                    fieldName: "expression/benefit_range",
+                    format: {
+                            digitSeparator: true,
+                            places: 0
+                            }
+                    },
+                    {
+                    fieldName: "expression/shape_area",
+                    format: {
+                            digitSeparator: true,
+                            places: 0
+                            }
+                    }]
+                }],
+                // autocasts to ExpressionInfo class
+                expressionInfos: [{
+                    name: "block_id",
+                    title: "Census Block ID",
+                    expression: "$feature.block_id"
+                }, 
+                {
+                    name: "benefit_value",
+                    title: "Benefit values",
+                    expression: "Round($feature.benefit_value,2)"
+                },
+                {
+                    name: "benefit_range",
+                    title: "benfit category",
+                    expression: "$feature.benefit_range"
+                },
+                {
+                    name: "shape_area",
+                    title: "Total Area(ft2)",
+                    expression: "Round($feature.shape_area,2)"
+                }]
+                },
+          outFields: ["block_id","benefit_value","benefit_range","shape_area"],
+          //outFields:["Population_Commercial","Population_Culture","Population_Education","Population_Health","Population_Office","Population_Outdoors",
+         // "Benefit_Commercial","Benefit_Culture","Benefit_Education","Benefit_Health","Benefit_Office","Benefit_Outdoors"],
+          renderer: renderer_block, //optional,
+          title:"Block Layer"
+        });
+
+
         /********DRAW NEW BUILDINGS -1 *************/
         let gLayer = new GraphicsLayer({
             id:"gLayer",
-            title:"Sketch Layer"
-           // listMode:"hide"
+            title:"Sketch Layer",
+            listMode:"hide"
         });
         let blue = [82, 82, 122, 0.9];
         let white = [255, 255, 255, 0.8];
@@ -940,13 +1105,16 @@
           width: "0px"}
         };
        /**************CREATE SCENE***************/
-       var resultsLayer = new GraphicsLayer(); 
+       var resultsLayer = new GraphicsLayer({
+        listMode:"hide"}
+       ); 
        let map = new WebScene({
-          portalItem: {
-            // id: "7901a1668e8d49d88f8ea2281cbf046e"
-            id: "47241277f5c249d6b1c13840192a7cb0"
-          },
-          layers: [geojsonLayer,gLayer]
+          // portalItem: {
+          //    id: "7901a1668e8d49d88f8ea2281cbf046e"
+          //   //id: "47241277f5c249d6b1c13840192a7cb0"
+          // },
+          basemap: 'topo',
+          layers: [geojsonLayer,gLayer,geojsonLayer_2d,geojsonLayer_block]
         });
 
         
@@ -991,7 +1159,7 @@
       
 
     /********DRAW NEW BUILDINGS -2 *************/
-    view.ui.add("fairness_box", "top-right");
+   // view.ui.add("fairness_box", "top-right");
     
     
     const sketch_editExpand = new Expand({ 
@@ -1500,10 +1668,12 @@
          * query by geometry
          * ************************/
         // add a GraphicsLayer for the sketches and the buffer
-        const sketchLayer = new GraphicsLayer(
-            
+        const sketchLayer = new GraphicsLayer({
+          listMode:"hide"}
         );
-        const bufferLayer = new GraphicsLayer();
+        const bufferLayer = new GraphicsLayer(
+          {listMode:"hide"}
+        );
         view.map.addMany([bufferLayer, sketchLayer]);
         let sceneLayer = null;
         let sceneLayerView = null;
@@ -1537,6 +1707,7 @@
                 //   geojsonLayerView = layerView;
                 // }
                 if (layer.id === "incidentsLayer" || layer.id === "gLayer") {
+                  //it should be add the glayer to the geojson Layer 
                   sceneLayerView = layerView;
                   // queryDiv.style.display = "block";
                 }
@@ -1812,90 +1983,62 @@
           labelsVisible: true,
           rangeLabelsVisible: true,
         });
+        
+        let benefit_slidervalue;
+        const benefitSlider = new Slider({
+          container: "benefit_slider",
+          min: 0,
+          max: 0.3,
+          steps: 0.005,
+          values:[0.01,0.015],
+          labelsVisible: true,
+          rangeLabelsVisible: true,
+        });
         //console.log(densitySlider.value)
-        densitySlider.on("thumb-drag", function(event) {
-          density = event.value;
+        benefitSlider.on("thumb-drag", function(event) {
+          benefit_slidervalue = event.value;
         });
         var highlight_den;
         // highlight features based on a layer query result
         // this workflow is valid only if the scene layer has an associated feature layer
         
-    //     document
-    //         .getElementById("query-quakes")
-    //         .addEventListener("click", function() {
-            
-    //         view.whenLayerView(sceneLayer).then(function(layerView){
-    //         var query = sceneLayer.createQuery();
-    //         query.where = "height >=" + densitySlider.values[0];
-    //          query.outFields = ["BldgType","height"];
-
-    //         sceneLayer.queryFeatures(query).then(function(result){
-    //             if (highlight_den) {
-    //             highlight_den.remove();
-    //             }
-    //         highlight_den = layerView.highlight(result.features);
-    //         })
-    //     });
-    //    });
-        
         document
             .getElementById("query-quakes")
             .addEventListener("click", function() {
-            queryDensity().then(displayResults);
+            queryBenefit().then(displayResults);
             //geojsonLayer.queryFeatures(query)
         });
 
         document
             .getElementById("query-quakes-clear")
             .addEventListener("click", function() {
-                clearDensity();
+                clearBenefit();
             //geojsonLayer.queryFeatures(query)
         });
 
-        function clearDensity(){
+        function clearBenefit(){
             highlight_den.remove();
         }
 
-        var groupselect = document.getElementById("GroupSelect");
-        function queryDensity() {
+        var groupselect = document.getElementById("GroupSelect_benefit");
+        function queryBenefit() {
         var query = geojsonLayer.createQuery()
             //query.where = "HealthGroup >= " + densitySlider.values[0] + " AND HealthGroup <= " + densitySlider.values[1];
-            query.where = groupselect.value + " BETWEEN " + densitySlider.values[0] + " AND "+ densitySlider.values[1]
+            query.where = groupselect.value + " BETWEEN " + benefitSlider.values[0] + " AND "+ benefitSlider.values[1]
             console.log(groupselect.value)
             console.log(query.where)
             query.returnGeometry = true;
             //query.where = "height >= 40"
             //density_query.geometry = density_geo;
-            query.outFields = ["BldgType","height","HealthGroup","OutdoorsGroup","OutdoorsGroup","CommercialGroup","EducationGroup","CultureGroup"];
+            query.outFields = ["BldgType","height","HealthGroup","OutdoorsGroup","OutdoorsGroup","CommercialGroup","EducationGroup","CultureGroup",
+            "HealthGroup_benefit","OutdoorsGroup_benefit","OfficeGroup_benefit","CommercialGroup_benefit","EducationGrou_benefitp","CultureGroup_benefit"];
         return geojsonLayer.queryObjectIds(query);
         }
 
         function displayResults(results) {
-          //resultsLayer.removeAll();
-          //var features = results.features
-        //   var features = results.features.map(function(graphic) {
-        //     // graphic.symbol = {
-        //     // type: "simple-fill", // autocasts as new SimpleMarkerSymbol()
-        //     // color: [ 51,51, 204, 0.9 ],
-        //     // style: "solid",
-        //     // outline: {  // autocasts as new SimpleLineSymbol()
-        //     //     color: "white",
-        //     //     width:  10}
-        //     // };
-        //     graphic.symbol= extrudedPolygon;
-        //     return graphic;
-        //   });
-        //var feature = results.features[0];
-        // use the objectID to highlight the feature
-        // highlightSelect = sceneLayerView.highlight(
-        // feature.attributes["OBJECTID"]
-        // );
           if(highlight_den){
               highlight_den.remove();
           }
-        //   view.whenLayerView(results.features).then(function(layerView) {
-        //     highlight_den = layerView.highlight(results.features);}
-
           highlight_den = sceneLayerView.highlight(results) //highlight the query results
           console.log(highlight_den)
           var numQuakes = results.length;
@@ -1906,19 +2049,6 @@
           geojsonLayer.queryFeatures().then(function(featureset){
             var feature_json = featureset.toJSON()
             geojson_f = JSON.stringify(ArcgisToGeojsonUtils.arcgisToGeoJSON(feature_json))
-            // on(dom.byId("savejson"), "click", function(){
-            //     request.post("http://localhost:8000", {
-            //         data: geojson_f,
-            //         headers: {
-            //             "X-Something": "A value"
-            //         }
-            //     }).then(function(text){
-            //         console.log("The server returned: ", text);
-            //     });
-            // });
-
-//            console.log(geojson_f);
-            console.log(geojson_f)
         });
         }
 
@@ -2123,13 +2253,7 @@
           view: view
         });
 
-//         on(dom.byId("loadjson"), "click", function(){
-//         domConst.place("<p>Requesting...</p>", "output");
-//         request.get("request/helloworld.json").then(function(text){
-//        domConst.place("<p>response: <code>" + text + "</code>", "output");
-//         console.log(text);
-//     });
-//   });
+
        // view.ui.add("load", "top-right");
         
     /*************Add other graphs using HIGHCHARTS***************************/
@@ -2306,7 +2430,8 @@ request.get("data/group_json_positive.json", {
 
                 // var benefit = data.benefit;
                 // var errordata = data.benefit_variance
-                
+                console.log(g1)
+           
 // var preference_com = [34.4
 // ,10.2
 // ,14.9
@@ -2597,7 +2722,7 @@ var defaultTitleXAxis = "Residential Groups";
 var defaultTitleYAxis = "Group Size";
 var drilldownTitleXAxis = "Building Types";
 var drilldownTitleYAxis = "Importance Weight";
-var defaultTitle = "Group Size";
+var defaultTitle = "Residential Group Size";
 var drilldownTitle = "Preference of ";
 // var chart = new Highcharts.Chart({
 var chart= new Highcharts.chart({
@@ -2616,7 +2741,7 @@ var chart= new Highcharts.chart({
         drillup: function(e) {
             this.xAxis[0].setTitle({ text: defaultTitleXAxis });
             this.yAxis[0].setTitle({ text: defaultTitleYAxis });
-            chart.setTitle({ text: defaultTitle },{text: "Click the columns to view preference of each group"});
+            chart.setTitle({ text: defaultTitle },{text: "Click the columns to view preference of each residential types"});
             //chart.setTitle({text: "New Title"});
         }
     },
@@ -2633,21 +2758,21 @@ var chart= new Highcharts.chart({
         }
     },
     xAxis: {
-        //type: 'category',
+        type: 'category',
         labels: {
             enabled: true,
             style: {
             "fontSize": "10px"
             }
       },
-      categories:["Health Group","Outdoors Group","Office Group","Commercial Group", "Education Group","Culture Group"],
-      //categories: ['Groupxx','Group2','Group3','Group4','Group5','Group6','Group7'],
+      //categories:["Health Group","Outdoors Group","Office Group","Commercial Group", "Education Group","Culture Group"],
+      //categories: ['Healthcare visitor','Active people','Employee & Workers','Shopping lovers','Students and Teachers','Culture Lovers'],
         //crosshair: true
     },
     yAxis: {
         min: 0,
         title: {
-            text: 'Group Size(人群数量）'
+            text: 'Group Size'
         },
         endOnTick: false
     },
@@ -2673,32 +2798,32 @@ var chart= new Highcharts.chart({
             colorByPoint: false,
             data: [
                 {
-                    name: "Group1",
+                    name: "Healthcare visitors",
                     y: groupsize[0],
                     drilldown: "Group1"
                 },
                 {
-                    name: "Group2",
+                    name: "Active people",
                     y: groupsize[1],
                     drilldown: "Group2"
                 },
                 {
-                    name: "Group3",
+                    name: "Employees & workers",
                     y: groupsize[2],
                     drilldown: "Group3"
                 },
                 {
-                    name: "Group4",
+                    name: "Shopping lovers",
                     y: groupsize[3],
                     drilldown: "Group4"
                 },
                 {
-                    name: "Group5",
+                    name: "Students and Teachers",
                     y: groupsize[4],
                     drilldown: "Group5"
                 },
                 {
-                    name: "Group6",
+                    name: "Culture Lovers",
                     y: groupsize[5],
                     drilldown: "Group6"
                 }
@@ -2830,7 +2955,8 @@ Highcharts.chart('benefit_container', {
     xAxis: [{
         //type: 'category'
         //categories: ['Group1','Group2','Group3','Group4','Group5','Group6'],
-        categories: ["Health Group","Outdoors Group","Office Group","Commercial Group", "Education Group","Culture Group"],
+        //categories: ["Health Group","Outdoors Group","Office Group","Commercial Group", "Education Group","Culture Group"],
+        categories: ['Healthcare visitor','Active people','Employee & Workers','Shopping lovers','Students and Teachers','Culture Lovers'],
         // labels:{
         //     style:{
         //     "fontsize": "7px"
@@ -2905,6 +3031,35 @@ Highcharts.chart('benefit_container', {
   });
 
   //view.ui.add(summaryExpand, "top-left");
+  view.when(function() {
+        var layerList = new LayerList({
+            view: view,
+            //selectedItems:[ "Buildings","Analysis Layer"]
+            // executes for each ListItem in the LayerList
+            listItemCreatedFunction: function (event) {
+
+            // The event object contains properties of the
+            // layer in the LayerList widget.
+
+            var item = event.item;
+
+            if (item.title === "Buildings") {
+            // open the list item in the LayerList
+            item.open = true;
+            item.visible = true;
+            // change the title to something more descriptive
+            //item.title = "test";
+            }
+            else
+            {item.open = false;
+            item.visible = false;}
+
+        }
+        });
+
+          // Add widget to the top right corner of the view
+          view.ui.add(layerList, "top-right");
+      });
   view.ui.add([sketch_editExpand,editExpand,queryDiv_expand,infoDiv_expand], "top-left");
 
       });
@@ -2915,7 +3070,23 @@ Highcharts.chart('benefit_container', {
     <div id="viewDiv">
         <div id="sidebar" class="esri-widget">
           <div id = highchartsDiv>
-            <div id="groupbar_container">
+            <figure class="highcharts-figure">
+                <h2 style="font-size: 20px; text-align: center;">Fairness Index:0.3</h2>
+                <div id="benefit_container"></div>
+            </figure>
+            <figure class="highcharts-figure">
+                <div id="groupsize_container"></div>
+            </figure>
+            <div id="summary" style="text-align: center;">
+                <h3>Current State of the Bronx Neighbourhood Planing</h3>
+                <p>Total Population:16,000</p>
+                <p>Total Floor Area: 11.61km2 </p>
+                <p>Site Area: 2.7km2</p>
+                <p>Gross Plot Ratio: 4.3</p>
+            </div>
+           
+
+            <!-- <div id="groupbar_container">
                 <h3 style="text-align:center;">Resident Group Preference</h3>  
             <table id="trellis">
                     <tr>
@@ -2929,32 +3100,11 @@ Highcharts.chart('benefit_container', {
                 <td></td>
                     </tr>
                 </table>
-                </div>
-                <!-- <figure class="highcharts-figure">
-                    <div id="groupbar_container"></div>
-                </figure> -->
-                <figure class="highcharts-figure">
-                    <div id="groupsize_container"></div>
-                </figure>
-                <figure class="highcharts-figure">
-                    <!-- <select class="esri-widget" id="Benefit_GroupSelect">
-                        <option value="HealthGroup_benefit">Health Group</option>
-                        <option value="OutdoorsGroup_benefit">Outdoors Group</option>
-                        <option value="OfficeGroup_benefit">Office Group</option>
-                        <option value="CommercialGroup_benefit">Commercial Group</option>
-                        <option value="EducationGroup_benefit">Education Group</option>
-                        <option value="CultureGroup_benefit">Culture Group</option>
-                      </select> -->
-                    <div id="benefit_container"></div>
-                    
-                </figure>
+                </div>    
+                 -->
             </div>
           </div>
     </div>
-    <div id="fairness_box" class="esri-widget">
-        <h3>Fairness Index:</h3>
-        <div class="fairness_score" id="fairness_score"><h2>0.3</h2></div>
-      </div>
     <div id="sketchPanel" class="esri-widget">
         <div id="drawbuilding"> 
             <input
@@ -3021,7 +3171,7 @@ Highcharts.chart('benefit_container', {
 
       </div>
     <div id="queryDiv" class="esri-widget">
-      <b>View accessibility</b><br />
+      <b>Measure accessibility</b><br />
       <br />Choose the area:
       <div class="geometry-options">
         <button
@@ -3065,8 +3215,7 @@ Highcharts.chart('benefit_container', {
     <!-- <div id="infoDiv" class="esri-widget--panel"> -->
     
     <div id="infoDiv" class="esri-widget">
-        <b>Filter by Residential Density</b><br />
-        <p>Population per building for</p>
+        <b>Filter for Residnetial Type:</b><br />
     <select class="esri-widget" id="GroupSelect">
         <option value="HealthGroup">Health Group</option>
         <option value="OutdoorsGroup">Outdoors Group</option>
@@ -3076,11 +3225,24 @@ Highcharts.chart('benefit_container', {
         <option value="CultureGroup">Culture Group</option>
       </select>
       <br/>
+        <p>On Population</p>
         <div id="density" class="slider"></div>
+        <br/>
+        <p>On Benefit</p>
+        <select class="esri-widget" id="GroupSelect_benefit">
+          <option value="HealthGroup_benefit">Health Group</option>
+          <option value="OutdoorsGroup_benefit">Outdoors Group</option>
+          <option value="OfficeGroup_benefit">Office Group</option>
+          <option value="CommercialGroup_benefit">Commercial Group</option>
+          <option value="EducationGroup_benefit">Education Group</option>
+          <option value="CultureGroup_benefit">Culture Group</option>
+        </select>
+        <div id="benefit_slider" class="slider"></div>
         <button id="query-quakes" class="esri-widget">Query</button>
         <button id="query-quakes-clear" class="esri-widget">Clear</button>
         <div id="results" class="esri-widget"></div>
     </div>
+
     <!-- <div id="controls" class="esri-widget">
         <div id="description" class="esri-widget">Population density by Group</div>
         <div id="outer-container" class="esri-widget">
