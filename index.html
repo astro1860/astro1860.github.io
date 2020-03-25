@@ -2738,14 +2738,14 @@ var chart= new Highcharts.chart({
         backgroundColor: 'rgba(0, 0, 0, 0)',
         events: {
         drilldown: function(e) {
-            this.xAxis[0].setTitle({ text: drilldownTitleXAxis });
+            //this.xAxis[0].setTitle({ text: drilldownTitleXAxis });
             this.yAxis[0].setTitle({ text: drilldownTitleYAxis });
             //chart.setTitle({ text: drilldownTitle + e.point.name },{text: "Preference of building types"});
             //chart.setsubTitle({ text: drilldownTitle + e.point.name });
             //chart.setTitle({text: "Preference"});
         },
         drillup: function(e) {
-            this.xAxis[0].setTitle({ text: defaultTitleXAxis });
+            //this.xAxis[0].setTitle({ text: defaultTitleXAxis });
             this.yAxis[0].setTitle({ text: defaultTitleYAxis });
             //chart.setTitle({ text: defaultTitle },{text: "Click the columns to view preference of each residential types"});
             //chart.setTitle({text: "New Title"});
