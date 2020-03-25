@@ -953,7 +953,7 @@
           }]
         },
           id: "geojson_2d",
-          title:"Analysis Layer",
+          title:"Heatmap (building-level)",
           outFields: ["BldgType", 
           "CommercialArea","ResidentialMixedArea","OfficeMixedArea","FunctionArea", 
           "height","NumFloors","bid",
@@ -1065,7 +1065,7 @@
           //outFields:["Population_Commercial","Population_Culture","Population_Education","Population_Health","Population_Office","Population_Outdoors",
          // "Benefit_Commercial","Benefit_Culture","Benefit_Education","Benefit_Health","Benefit_Office","Benefit_Outdoors"],
           renderer: renderer_block, //optional,
-          title:"Block Layer"
+          title:"Heatmap (block-level)"
         });
 
 
@@ -2018,6 +2018,9 @@
 
         function clearBenefit(){
             highlight_den.remove();
+            document.getElementById("results").innerHTML =
+            0 + " buildings found";
+
         }
 
         var groupselect = document.getElementById("GroupSelect_benefit");
@@ -2049,6 +2052,8 @@
           geojsonLayer.queryFeatures().then(function(featureset){
             var feature_json = featureset.toJSON()
             geojson_f = JSON.stringify(ArcgisToGeojsonUtils.arcgisToGeoJSON(feature_json))
+         
+            console.log(geojson_f)
         });
         }
 
@@ -2253,7 +2258,7 @@
           view: view
         });
 
-
+       
        // view.ui.add("load", "top-right");
         
     /*************Add other graphs using HIGHCHARTS***************************/
@@ -2722,8 +2727,9 @@ var defaultTitleXAxis = "Residential Groups";
 var defaultTitleYAxis = "Group Size";
 var drilldownTitleXAxis = "Building Types";
 var drilldownTitleYAxis = "Importance Weight";
-var defaultTitle = "Residential Group Size";
-var drilldownTitle = "Preference of ";
+//var defaultTitle = "Residential Group Size";
+var defaultTitle = null;
+//var drilldownTitle = "Preference of ";
 // var chart = new Highcharts.Chart({
 var chart= new Highcharts.chart({
     chart: {
@@ -2734,24 +2740,25 @@ var chart= new Highcharts.chart({
         drilldown: function(e) {
             this.xAxis[0].setTitle({ text: drilldownTitleXAxis });
             this.yAxis[0].setTitle({ text: drilldownTitleYAxis });
-            chart.setTitle({ text: drilldownTitle + e.point.name },{text: "Preference of building types"});
+            //chart.setTitle({ text: drilldownTitle + e.point.name },{text: "Preference of building types"});
             //chart.setsubTitle({ text: drilldownTitle + e.point.name });
             //chart.setTitle({text: "Preference"});
         },
         drillup: function(e) {
             this.xAxis[0].setTitle({ text: defaultTitleXAxis });
             this.yAxis[0].setTitle({ text: defaultTitleYAxis });
-            chart.setTitle({ text: defaultTitle },{text: "Click the columns to view preference of each residential types"});
+            //chart.setTitle({ text: defaultTitle },{text: "Click the columns to view preference of each residential types"});
             //chart.setTitle({text: "New Title"});
         }
     },
     },
     title: {
-        text: 'Group Size'
+        // text: 'Group Size'
+        text: null
     },
-    subtitle: {
-        text: 'Click the columns to view preference of each group'
-    },
+    // subtitle: {
+    //     text: 'Click the columns to view preference of each group'
+    // },
     accessibility: {
         announceNewData: {
             enabled: true
@@ -2947,7 +2954,8 @@ Highcharts.chart('benefit_container', {
         backgroundColor: 'rgba(0, 0, 0, 0)'
     },
     title: {
-        text: 'Benefit of residential groups'
+        //text: 'Benefit of residential groups'
+        text: null
     },
     legend: {
         enabled: false
@@ -2987,26 +2995,29 @@ Highcharts.chart('benefit_container', {
         }
     },
     tooltip: {
-        shared: true
+        shared: true,
+        // style:{
+        // "fontSize": "7px"
+        // }
     },
 
    series: [{
-    name: 'Benefit',
+    name: 'Between-group benefit',
     id:'benefit',
     //color: '#4572A7',
     colorByPoint: false,
     type: 'column',
     //type:'variwide',
     data: [
-        ["Group1",benefit[0],groupsize[0]],
-        ["Group2",benefit[1],groupsize[1]],
-        ["Group3",benefit[2],groupsize[2]],
-        ["Group4",benefit[3],groupsize[3]],
-        ["Group5",benefit[4],groupsize[4]],
-        ["Group6",benefit[5],groupsize[5]]]
+        ["Healthcare visitor",benefit[0],groupsize[0]],
+        ["Active people",benefit[1],groupsize[1]],
+        ["Employee & Workers",benefit[2],groupsize[2]],
+        ["Shopping lovers",benefit[3],groupsize[3]],
+        ["Students and Teachers",benefit[4],groupsize[4]],
+        ["Culture Lovers",benefit[5],groupsize[5]]]
 }, 
 { 
-    name: 'Benefit varaince',
+    name: 'Within-group benefit',
     type: 'errorbar',
     //colorByPoint: true,
     linkedTo:'benefit',
@@ -3071,16 +3082,16 @@ Highcharts.chart('benefit_container', {
         <div id="sidebar" class="esri-widget">
           <div id = highchartsDiv>
             <figure class="highcharts-figure">
-                <h2 style="font-size: 20px; text-align: center;">Fairness Index:0.3</h2>
+                <h2 style="font-size: 20px; text-align: center;">Fairness Index: 30.5</h2>
                 <div id="benefit_container"></div>
             </figure>
             <figure class="highcharts-figure">
                 <div id="groupsize_container"></div>
             </figure>
             <div id="summary" style="text-align: center;">
-                <h3>Current State of the Bronx Neighbourhood Planing</h3>
+                <h3>Current State of the Bronx Neighbourhood Planning</h3>
                 <p>Total Population:16,000</p>
-                <p>Total Floor Area: 11.61km2 </p>
+                <p>Total Floor Area: 12.61km2 </p>
                 <p>Site Area: 2.7km2</p>
                 <p>Gross Plot Ratio: 4.3</p>
             </div>
@@ -3123,17 +3134,7 @@ Highcharts.chart('benefit_container', {
             />
           </div>
       </div>
-    <!-- <div id="save" class="esri-widget">
-        <button id="savejson" class="esri-button">
-          Save Design
-        </button>
-      </div>
-      <div id="load" class="esri-widget">
-        <div id="output"></div>
-        <button id="loadjson" class="esri-button">
-          Load Design
-        </button>
-      </div> -->
+
     <div id="editArea" class="editArea-container esri-widget--panel">
         <div id="addFeatureDiv" style="display:block;">
           <h3 class="list-heading">Update Building Information</h3>
@@ -3215,27 +3216,27 @@ Highcharts.chart('benefit_container', {
     <!-- <div id="infoDiv" class="esri-widget--panel"> -->
     
     <div id="infoDiv" class="esri-widget">
-        <b>Filter for Residnetial Type:</b><br />
+        <b>Filter for Resident Type:</b><br />
     <select class="esri-widget" id="GroupSelect">
-        <option value="HealthGroup">Health Group</option>
-        <option value="OutdoorsGroup">Outdoors Group</option>
-        <option value="OfficeGroup">Office Group</option>
-        <option value="CommercialGroup">Commercial Group</option>
-        <option value="EducationGroup">Education Group</option>
-        <option value="CultureGroup">Culture Group</option>
+        <option value="HealthGroup">Healthcare visitor</option>
+        <option value="OutdoorsGroup">Active people</option>
+        <option value="OfficeGroup">Employee & Workers</option>
+        <option value="CommercialGroup">Shopping Lovers</option>
+        <option value="EducationGroup">Students and Teachers</option>
+        <option value="CultureGroup">Culture Lovers</option>
       </select>
       <br/>
-        <p>On Population</p>
+        <p>of Population</p>
         <div id="density" class="slider"></div>
         <br/>
-        <p>On Benefit</p>
+        <p>of Benefit</p>
         <select class="esri-widget" id="GroupSelect_benefit">
-          <option value="HealthGroup_benefit">Health Group</option>
-          <option value="OutdoorsGroup_benefit">Outdoors Group</option>
-          <option value="OfficeGroup_benefit">Office Group</option>
-          <option value="CommercialGroup_benefit">Commercial Group</option>
-          <option value="EducationGroup_benefit">Education Group</option>
-          <option value="CultureGroup_benefit">Culture Group</option>
+          <option value="HealthGroup_benefit">Healthcare visitor</option>
+          <option value="OutdoorsGroup_benefit">Active people</option>
+          <option value="OfficeGroup_benefit">Employee & Workers</option>
+          <option value="CommercialGroup_benefit">Shopping Lovers </option>
+          <option value="EducationGroup_benefit">Students and Teachers</option>
+          <option value="CultureGroup_benefit">Culture Lovers</option>
         </select>
         <div id="benefit_slider" class="slider"></div>
         <button id="query-quakes" class="esri-widget">Query</button>
