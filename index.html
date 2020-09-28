@@ -233,7 +233,6 @@ rect.parent,
   request.get("data/indicia.json", {
                   // Parse data from JSON to a JavaScript object
                   handleAs: "json"}).then(d3.json(data, function(root) {
-	  console.log(root)
 	  initialize(root);
 	  accumulate(root);
 	  layout(root);
@@ -391,6 +390,6 @@ rect.parent,
 			: d.name;
 	  }
 	  
-	});
+	}));
 
 </script>
